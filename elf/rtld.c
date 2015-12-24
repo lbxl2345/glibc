@@ -44,6 +44,8 @@
 
 #include <assert.h>
 
+#include <sharedlist.h>
+
 /* Avoid PLT use for our local calls at startup.  */
 extern __typeof (__mempcpy) __mempcpy attribute_hidden;
 
@@ -736,6 +738,15 @@ dl_main (const ElfW(Phdr) *phdr,
 	 ElfW(Addr) *user_entry,
 	 ElfW(auxv_t) *auxv)
 {
+  for(int i = 0; i < SHARED_LIST_SIZE; i++)
+  {
+  strcpy(GL(shared_list[i]), shared_list[i]);
+  GL(shared_num)++;
+  }
+  for(int i = 0; i<GL(shared_num);i++)
+  {
+    _dl_printf("sharedlist:%s\n", GL(shared_list[i]));
+  }
   const ElfW(Phdr) *ph;
   enum mode mode;
   struct link_map *main_map;
@@ -2170,7 +2181,6 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
   /* We must munmap() the cache file.  */
   _dl_unload_cache ();
 #endif
-
   /* Once we return, _dl_sysdep_start will invoke
      the DT_INIT functions and then *USER_ENTRY.  */
 }

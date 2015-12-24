@@ -1,5 +1,8 @@
-#define SHARED_LIST_SIZE 1
-char sharedlist[SHARED_LIST_SIZE][30] = 
+#define SHARED_LIST_SIZE 2
+#ifndef NO_SHARED_LIST
+char shared_list[SHARED_LIST_SIZE][30] = 
 {
-"lbc.so.6",
-}
+"libc.so.6",
+"test.so",
+};
+#endif

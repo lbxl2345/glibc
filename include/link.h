@@ -321,6 +321,8 @@ struct link_map
       uintptr_t cookie;
       unsigned int bindflags;
     } l_audit[0];
+    /*lbx adds codes hear*/
+    int l_shared_flag;
   };
 
 

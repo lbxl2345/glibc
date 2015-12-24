@@ -416,7 +416,13 @@ struct rtld_global
     size_t count;
     void *list[50];
   } *_dl_scope_free_list;
-#ifdef SHARED
+  /*lbx add some value*/
+  uint8_t _shared_num;
+  #define NO_SHARED_LIST
+  #include <sharedlist.h>
+  char _shared_list[SHARED_LIST_SIZE][30];
+  #undef NO_SHARED_LIST
+ #ifdef SHARED
 };
 # define __rtld_global_attribute__
 # if IS_IN (rtld)

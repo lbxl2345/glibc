@@ -224,6 +224,15 @@ _dl_new_object (char *realname, const char *libname, int type,
     out:
       new->l_origin = origin;
     }
-
+/*lbx add codes here*/
+  new->l_shared_flag = 1;
+  for(int i = 0; i < GL(shared_num); i++)
+  {
+    if(strcmp(GL(shared_list[i]), libname))
+    {
+      new->l_shared_flag = 0;
+      break;
+    }
+  }
   return new;
 }

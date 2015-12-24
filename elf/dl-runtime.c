@@ -72,6 +72,7 @@ _dl_fixup (
     = (const void *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);
   const ElfW(Sym) *sym = &symtab[ELFW(R_SYM) (reloc->r_info)];
   void *const rel_addr = (void *)(l->l_addr + reloc->r_offset);
+  _dl_dprintf(1,"souce:%s\t%s\t%u\n", l->l_libname->name,l->l_name, l->l_shared_flag);
   lookup_t result;
   DL_FIXUP_VALUE_TYPE value;
 
@@ -110,7 +111,7 @@ _dl_fixup (
 
       result = _dl_lookup_symbol_x (strtab + sym->st_name, l, &sym, l->l_scope,
 				    version, ELF_RTYPE_CLASS_PLT, flags, NULL);
-
+       _dl_dprintf(1,"dest:%s\t%s\t%u\n", result->l_libname->name,result->l_name, result->l_shared_flag);
       /* We are done with the global scope.  */
       if (!RTLD_SINGLE_THREAD_P)
 	THREAD_GSCOPE_RESET_FLAG ();
