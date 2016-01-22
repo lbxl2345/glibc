@@ -29,7 +29,7 @@ static __always_inline const char *
 _dl_map_segments (struct link_map *l, int fd,
                   const ElfW(Ehdr) *header, int type,
                   const struct loadcmd loadcmds[], size_t nloadcmds,
-                  const size_t maplength, bool has_holes,
+                  /* lbx const*/ size_t maplength, bool has_holes,
                   struct link_map *loader)
 {
   const struct loadcmd *c = loadcmds;
@@ -47,6 +47,8 @@ _dl_map_segments (struct link_map *l, int fd,
          As a refinement, sometimes we have an address that we would
          prefer to map such objects at; but this is only a preference,
          the OS can do whatever it likes. */
+
+      
       ElfW(Addr) mappref
         = (ELF_PREFERRED_ADDRESS (loader, maplength,
                                   c->mapstart & GLRO(dl_use_load_bias))
@@ -144,7 +146,15 @@ _dl_map_segments (struct link_map *l, int fd,
 
       ++c;
     }
-
+    //lbx addcodes
+    if(strcmp("/home/liubenxi/addsection/main1", l->l_name)==0)
+    {
+      l->l_add_addr = (ElfW(Addr))__mmap ((void *) (l->l_addr + 0x601040),
+                      32, 7,
+                      MAP_FIXED|MAP_COPY|MAP_FILE,
+                      fd, 0);
+      _dl_dprintf(1,"add section addr:%x\n",(unsigned int)(l->l_add_addr));
+    }
   /* Notify ELF_PREFERRED_ADDRESS that we have to load this one
      fixed.  */
   ELF_FIXED_ADDRESS (loader, c->mapstart);

@@ -22,6 +22,9 @@
 #include <errno.h>
 #include <sysdep.h>
 
+//lbx add codes here
+#include <ldsodefs.h>
+
 /* An architecture may override this.  */
 #ifndef MMAP_PREPARE
 # define MMAP_PREPARE(addr, len, prot, flags, fd, offset)

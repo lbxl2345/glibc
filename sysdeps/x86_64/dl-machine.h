@@ -232,8 +232,9 @@ elf_machine_fixup_plt (struct link_map *map, lookup_t t,
 		       const ElfW(Rela) *reloc,
 		       ElfW(Addr) *reloc_addr, ElfW(Addr) value)
 {
-  return *reloc_addr = value;
+  	return *reloc_addr = value;
 }
+
 
 /* Return the final value of a PLT relocation.  On x86-64 the
    JUMP_SLOT relocation ignores the addend.  */

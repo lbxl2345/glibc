@@ -1078,7 +1078,6 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
 		= N_("ELF load command address/offset not properly aligned");
 	      goto call_lose;
 	    }
-
 	  struct loadcmd *c = &loadcmds[nloadcmds++];
 	  c->mapstart = ALIGN_DOWN (ph->p_vaddr, GLRO(dl_pagesize));
 	  c->mapend = ALIGN_UP (ph->p_vaddr + ph->p_filesz, GLRO(dl_pagesize));
@@ -1220,6 +1219,7 @@ cannot allocate TLS data structures for initial thread");
        This is responsible for filling in:
        l_map_start, l_map_end, l_addr, l_contiguous, l_text_end, l_phdr
      */
+      _dl_printf("**%s**\n",l->l_name);
     errstring = _dl_map_segments (l, fd, header, type, loadcmds, nloadcmds,
 				  maplength, has_holes, loader);
     if (__glibc_unlikely (errstring != NULL))
@@ -1285,6 +1285,7 @@ cannot allocate TLS data structures for initial thread");
 	  errstring = N_("invalid caller");
 	  goto call_lose;
 	}
+
 
       /* The stack is presently not executable, but this module
 	 requires that it be executable.  We must change the
@@ -1937,7 +1938,6 @@ _dl_map_object (struct link_map *loader, const char *name,
   char *name_copy;
   struct link_map *l;
   struct filebuf fb;
-
   assert (nsid >= 0);
   assert (nsid < GL(dl_nns));
 

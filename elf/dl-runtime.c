@@ -72,7 +72,8 @@ _dl_fixup (
     = (const void *) (D_PTR (l, l_info[DT_JMPREL]) + reloc_offset);
   const ElfW(Sym) *sym = &symtab[ELFW(R_SYM) (reloc->r_info)];
   void *const rel_addr = (void *)(l->l_addr + reloc->r_offset);
-  _dl_dprintf(1,"souce:%s\t%s\t%u\n", l->l_libname->name,l->l_name, l->l_shared_flag);
+  //lbx
+  //_dl_dprintf(1,"souce:%s\t%s\t%u\n", l->l_libname->name,l->l_name, l->l_shared_flag);
   lookup_t result;
   DL_FIXUP_VALUE_TYPE value;
 
@@ -111,7 +112,6 @@ _dl_fixup (
 
       result = _dl_lookup_symbol_x (strtab + sym->st_name, l, &sym, l->l_scope,
 				    version, ELF_RTYPE_CLASS_PLT, flags, NULL);
-       _dl_dprintf(1,"dest:%s\t%s\t%u\n", result->l_libname->name,result->l_name, result->l_shared_flag);
       /* We are done with the global scope.  */
       if (!RTLD_SINGLE_THREAD_P)
 	THREAD_GSCOPE_RESET_FLAG ();
@@ -145,8 +145,26 @@ _dl_fixup (
   /* Finally, fix up the plt itself.  */
   if (__glibc_unlikely (GLRO(dl_bind_not)))
     return value;
-
-  return elf_machine_fixup_plt (l, result, reloc, rel_addr, value);
+	if(l->l_shared_flag == 0)
+	{
+  		_dl_dprintf(1, "using trampoline in dl_fixup:%s\n", l->l_name );
+  		if(strcmp(l->l_name, "") == 0)
+  		{
+  		ElfW(Addr) *reloc_addr = rel_addr;
+  		//ElfW(Addr) temp = ElfW(Addr) 
+  	 	*reloc_addr = l->l_jump_addr + 6 * reloc_arg;
+  	 	_dl_dprintf(1, "jump_addr:%x\n", (unsigned)l->l_jump_addr + 6 * reloc_arg);
+  		//ElfW(Addr) *temp_addr = l->l_sgot_addr + 2 * reloc_offset;
+  	 	_dl_dprintf(1, "sgot_addr:%x\n", (unsigned)l->l_sgot_addr + 4 * reloc_arg);
+  		ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr + 4 * reloc_arg);
+  		*temp = value;
+  		_dl_dprintf(1, "value:%x\n", (unsigned)value);
+  		_dl_dprintf(1, "return:%x\n",(unsigned)(*reloc_addr));
+  		return *reloc_addr;
+  		}
+	}
+  //else
+  	return elf_machine_fixup_plt (l, result, reloc, rel_addr, value);
 }
 
 #ifndef PROF

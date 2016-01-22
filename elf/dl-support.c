@@ -35,7 +35,7 @@
 #include <hp-timing.h>
 #include <stackinfo.h>
 
-uint8_t _shared_num = 0;
+uint8_t _shared_num = SHARED_LIST_SIZE;
 char _shared_list[SHARED_LIST_SIZE][30];
 extern char *__progname;
 char **_dl_argv = &__progname;	/* This is checked for some error messages.  */

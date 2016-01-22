@@ -23,7 +23,8 @@
 #include <ldsodefs.h>
 
 #include <assert.h>
-
+//lbx add include
+#include <fcntl.h>
 
 /* Add the new link_map NEW to the end of the namespace list.  */
 void
@@ -225,13 +226,35 @@ _dl_new_object (char *realname, const char *libname, int type,
       new->l_origin = origin;
     }
 /*lbx add codes here*/
-  new->l_shared_flag = 1;
+  new->l_shared_flag = 0;
   for(int i = 0; i < GL(shared_num); i++)
   {
-    if(strcmp(GL(shared_list[i]), libname))
+    if(strcmp(GL(shared_list[i]), libname) == 0)
     {
-      new->l_shared_flag = 0;
+      new->l_shared_flag = 1;
       break;
+    }
+  }
+  if(new->l_shared_flag == 0)
+  {
+    char *object_jumpgot = malloc(strlen(realname) + strlen(".jumpgot") + 1);
+    strcpy(object_jumpgot, realname);
+    strcat(object_jumpgot, ".jumpgot");
+    int fd_objectjs = __open(object_jumpgot, O_RDONLY | O_CLOEXEC);
+    if(fd_objectjs == 0)
+    {
+      new->l_protected_flag = 0;
+      _dl_printf("this object has no jump got");
+    }
+    else
+    {
+      new->l_protected_flag = 1;
+      __libc_read(fd_objectjs, &new->l_jshdr, sizeof(struct js_header));
+      uint32_t sgot_len = GLRO(dl_pagesize) * (new->l_jshdr.sgot_size/GLRO(dl_pagesize) + 1);
+      uint32_t jump_len = (new->l_jshdr.zero_size + new->l_jshdr.jump_size + sizeof(struct js_header));
+      new->l_jump_addr = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_objectjs, 0) +  new->l_jshdr.jump_off;
+      new->l_sgot_addr = new->l_jump_addr + new->l_jshdr.sgot_off - new->l_jshdr.jump_off;
+      __close(fd_objectjs);
     }
   }
   return new;

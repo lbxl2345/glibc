@@ -738,15 +738,6 @@ dl_main (const ElfW(Phdr) *phdr,
 	 ElfW(Addr) *user_entry,
 	 ElfW(auxv_t) *auxv)
 {
-  for(int i = 0; i < SHARED_LIST_SIZE; i++)
-  {
-  strcpy(GL(shared_list[i]), shared_list[i]);
-  GL(shared_num)++;
-  }
-  for(int i = 0; i<GL(shared_num);i++)
-  {
-    _dl_printf("sharedlist:%s\n", GL(shared_list[i]));
-  }
   const ElfW(Phdr) *ph;
   enum mode mode;
   struct link_map *main_map;
@@ -942,8 +933,44 @@ of this helper program; chances are you did not intend to run this program.\n\
 	}
 
       /* Now the map for the main executable is available.  */
+     
       main_map = GL(dl_ns)[LM_ID_BASE]._ns_loaded;
-
+       //lbx add codes here
+      //read the jumpgot file of main(if there is)
+      for(int i = 0; i < SHARED_LIST_SIZE; i++)
+      {
+        strcpy(GL(shared_list[i]), shared_list[i]);
+        GL(shared_num)++;
+      }
+      char *main_jumpgot = malloc(strlen(rtld_progname) + strlen(".jumpgot") + 1);
+      strcpy(main_jumpgot, rtld_progname);
+      strcat(main_jumpgot, ".jumpgot");
+      _dl_printf("main_jumogot name:%s\n",main_jumpgot);
+      int fd_mainjs = __open(main_jumpgot, O_RDONLY | O_CLOEXEC);
+      if(fd_mainjs == 0) 
+      {
+        main_map->l_protected_flag = 0;
+        _dl_printf(" main proc have no jumpgot file\n");
+      }
+      //the offset of jumptable is sizeof(uint32_t)
+      //read the offset of sgot
+      else
+      {
+        main_map->l_protected_flag = 1;
+        __libc_read(fd_mainjs, &main_map->l_jshdr, sizeof(struct js_header));
+        _dl_printf("main jump_offset:%x\n", (unsigned)main_map->l_jshdr.jump_off);
+        _dl_printf("main sogt_offset:%x\n", (unsigned)main_map->l_jshdr.sgot_off);
+        //initialize the shared object list(disabled)
+        
+        //mmap:offset size should be mutiple of memory page
+        uint32_t sgot_len = GLRO(dl_pagesize) * (main_map->l_jshdr.sgot_size/GLRO(dl_pagesize) + 1);
+        uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + sizeof(struct js_header));
+        main_map->l_jump_addr = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_mainjs, 0) +  main_map->l_jshdr.jump_off;
+        main_map->l_sgot_addr = main_map->l_jump_addr + main_map->l_jshdr.sgot_off - main_map->l_jshdr.jump_off;
+        _dl_printf("%x\n", (unsigned)main_map->l_sgot_addr);
+        __close(fd_mainjs);
+        main_map->l_shared_flag = 0;
+      }
       if (__builtin_expect (mode, normal) == normal
 	  && GL(dl_rtld_map).l_info[DT_SONAME] != NULL
 	  && main_map->l_info[DT_SONAME] != NULL

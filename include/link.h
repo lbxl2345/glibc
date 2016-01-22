@@ -73,7 +73,14 @@ struct r_search_path_struct
     int malloced;
   };
 
-
+struct js_header
+{
+  uint32_t jump_size;
+  uint32_t sgot_size;
+  uint32_t zero_size;
+  uint32_t jump_off;
+  uint32_t sgot_off;
+};
 /* Structure describing a loaded shared object.  The `l_next' and `l_prev'
    members form a chain of all the shared objects loaded at startup.
 
@@ -323,6 +330,11 @@ struct link_map
     } l_audit[0];
     /*lbx adds codes hear*/
     int l_shared_flag;
+    int l_protected_flag;
+    struct js_header l_jshdr;
+    ElfW(Addr) l_add_addr;
+    ElfW(Addr) l_jump_addr;
+    ElfW(Addr) l_sgot_addr;
   };
 
 
