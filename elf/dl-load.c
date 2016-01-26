@@ -1103,6 +1103,15 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
 	  if (ph->p_flags & PF_X)
 	    c->prot |= PROT_EXEC;
 #endif
+    //lbx add codes here
+     if ((ph->p_flags & PF_X))
+    {
+      l->text_cmd = c;
+    }
+    else
+    {
+      l->data_cmd = c;
+    }
 	  break;
 
 	case PT_TLS:
@@ -1219,7 +1228,6 @@ cannot allocate TLS data structures for initial thread");
        This is responsible for filling in:
        l_map_start, l_map_end, l_addr, l_contiguous, l_text_end, l_phdr
      */
-      _dl_printf("**%s**\n",l->l_name);
     errstring = _dl_map_segments (l, fd, header, type, loadcmds, nloadcmds,
 				  maplength, has_holes, loader);
     if (__glibc_unlikely (errstring != NULL))

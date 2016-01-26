@@ -45,6 +45,7 @@
 #include <assert.h>
 
 #include <sharedlist.h>
+#include <sys/ioctl.h>
 
 /* Avoid PLT use for our local calls at startup.  */
 extern __typeof (__mempcpy) __mempcpy attribute_hidden;
@@ -1112,13 +1113,23 @@ of this helper program; chances are you did not intend to run this program.\n\
 		      + (ph->p_vaddr & ~(GLRO(dl_pagesize) - 1)));
 	  if (main_map->l_map_start > mapstart)
 	    main_map->l_map_start = mapstart;
-
-	  /* Also where it ends.  */
+    /* Also where it ends.  */
 	  allocend = main_map->l_addr + ph->p_vaddr + ph->p_memsz;
 	  if (main_map->l_map_end < allocend)
 	    main_map->l_map_end = allocend;
 	  if ((ph->p_flags & PF_X) && allocend > main_map->l_text_end)
 	    main_map->l_text_end = allocend;
+     //lbx add codes:
+    if ((ph->p_flags & PF_X))
+    {
+      main_map->text_info.start = mapstart;
+      main_map->text_info.end = allocend;
+    }
+    else
+    {
+      main_map->data_info.start = mapstart;
+      main_map->data_info.end = allocend;
+    }
 	}
 	break;
 
@@ -2204,12 +2215,51 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
   _dl_debug_state ();
   LIBC_PROBE (init_complete, 2, LM_ID_BASE, r);
 
+//lbx add code
+//send pid info
+#define MEMDEV_IOC_MAGIC  'k'
+#define MEMDEV_IOCSETDATA _IOW(MEMDEV_IOC_MAGIC, 3, int)
+  int pid = __getpid();
+  int cmd = MEMDEV_IOCSETDATA;
+  int fddev = open("/dev/memdev0", O_RDWR);
+  if(fddev < 0)
+  {
+    _dl_printf("Open Dev Mem0 Error!\n");
+  }
+  else
+  {
+    _dl_printf("<--- Call MEMDEV_IOCPRINT --->\n");
+    if (ioctl(fddev, cmd, &pid) < 0)
+    {
+      _dl_printf("Call cmd MEMDEV_IOCPRINT fail\n");
+    }
+  }
+  //give map info
+  // struct link_map *t = main_map;
+  // void *page = mmap(NULL, 1024, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  // struct seg_info infos[2];
+  // while(t != NULL)
+  // {
+  //   infos[0].start = t->data_info.start;
+  //   infos[0].end = t->data_info.end;
+  //   infos[1].start = t->text_info.start;
+  //   infos[1].end = t->text_info.end;
+  //   _dl_printf("name:%s\n", t->l_name);
+  //   _dl_printf("%u\t", (unsigned)infos[0].start);
+  //   _dl_printf("%u\n", (unsigned)infos[0].end);
+  //   _dl_printf("%u\t", (unsigned)infos[1].start);
+  //   _dl_printf("%u\n", (unsigned)infos[1].end);
+  //   //memcpy(page, &infos, sizeof(infos));
+  //   t = t->l_next;
+  // }
+  // munmap(page, 1024);
 #if defined USE_LDCONFIG && !defined MAP_COPY
   /* We must munmap() the cache file.  */
   _dl_unload_cache ();
 #endif
   /* Once we return, _dl_sysdep_start will invoke
      the DT_INIT functions and then *USER_ENTRY.  */
+  
 }
 
 /* This is a little helper function for resolving symbols while

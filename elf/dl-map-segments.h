@@ -143,18 +143,21 @@ _dl_map_segments (struct link_map *l, int fd,
                 return DL_MAP_SEGMENTS_ERROR_MAP_ZERO_FILL;
             }
         }
+        //lbx addcodes
+        if(c == l->data_cmd)
+        {
+          l->data_info.start = l->l_addr + c->mapstart;
+          l->data_info.end = l->l_addr + c->mapend;
+        }
+        if(c == l->text_cmd)
+        {
+          l->text_info.start = l->l_addr + c->mapstart;
+          l->text_info.end = l->l_addr + c->mapend;
+        }
 
       ++c;
     }
-    //lbx addcodes
-    if(strcmp("/home/liubenxi/addsection/main1", l->l_name)==0)
-    {
-      l->l_add_addr = (ElfW(Addr))__mmap ((void *) (l->l_addr + 0x601040),
-                      32, 7,
-                      MAP_FIXED|MAP_COPY|MAP_FILE,
-                      fd, 0);
-      _dl_dprintf(1,"add section addr:%x\n",(unsigned int)(l->l_add_addr));
-    }
+
   /* Notify ELF_PREFERRED_ADDRESS that we have to load this one
      fixed.  */
   ELF_FIXED_ADDRESS (loader, c->mapstart);

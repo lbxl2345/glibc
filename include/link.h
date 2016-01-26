@@ -81,6 +81,12 @@ struct js_header
   uint32_t jump_off;
   uint32_t sgot_off;
 };
+
+struct seg_info
+{
+  ElfW(Addr) start;
+  ElfW(Addr) end;
+};
 /* Structure describing a loaded shared object.  The `l_next' and `l_prev'
    members form a chain of all the shared objects loaded at startup.
 
@@ -335,6 +341,11 @@ struct link_map
     ElfW(Addr) l_add_addr;
     ElfW(Addr) l_jump_addr;
     ElfW(Addr) l_sgot_addr;
+    struct seg_info data_info;
+    struct seg_info text_info;
+
+    struct loadcmd *data_cmd;
+    struct loadcmd *text_cmd;
   };
 
 
