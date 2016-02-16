@@ -28,6 +28,11 @@
 #include <tls.h>
 #include <dl-irel.h>
 
+ //lbx add codes here
+#define JUMP_SIZE 42
+#define SGOT_SIZE 8
+#define BACK_SIZE 50
+
 
 #if (!ELF_MACHINE_NO_RELA && !defined ELF_MACHINE_PLT_REL) \
     || ELF_MACHINE_NO_REL
@@ -145,23 +150,22 @@ _dl_fixup (
   /* Finally, fix up the plt itself.  */
   if (__glibc_unlikely (GLRO(dl_bind_not)))
     return value;
-	if(l->l_shared_flag == 0)
+	if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	{
   		_dl_dprintf(1, "using trampoline in dl_fixup:%s\n", l->l_name );
-  		if(strcmp(l->l_name, "") == 0)
-  		{
-  		ElfW(Addr) *reloc_addr = rel_addr;
+  		//ElfW(Addr) *reloc_addr = rel_addr;
   		//ElfW(Addr) temp = ElfW(Addr) 
-  	 	*reloc_addr = l->l_jump_addr + 6 * reloc_arg;
-  	 	_dl_dprintf(1, "jump_addr:%x\n", (unsigned)l->l_jump_addr + 6 * reloc_arg);
+  	 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
+  	 	//*rel_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
+  	 	_dl_dprintf(1, "jump_addr:%x\n", (unsigned)l->l_jump_addr + JUMP_SIZE * reloc_arg);
   		//ElfW(Addr) *temp_addr = l->l_sgot_addr + 2 * reloc_offset;
-  	 	_dl_dprintf(1, "sgot_addr:%x\n", (unsigned)l->l_sgot_addr + 4 * reloc_arg);
-  		ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr + 4 * reloc_arg);
+  	 	_dl_dprintf(1, "sgot_addr:%x\n", (unsigned)l->l_sgot_addr + SGOT_SIZE * reloc_arg);
+  		ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr + SGOT_SIZE * reloc_arg);
   		*temp = value;
-  		_dl_dprintf(1, "value:%x\n", (unsigned)value);
-  		_dl_dprintf(1, "return:%x\n",(unsigned)(*reloc_addr));
-  		return *reloc_addr;
-  		}
+  		//_dl_dprintf(1, "value:%x\n", (unsigned)value);
+  		//_dl_dprintf(1, "return:%x\n",(unsigned)(*reloc_addr));
+  		//elf_machine_fixup_sgot(l, result, reloc, &(l->l_sgot_addr + SGOT_SIZE * reloc_arg), value);
+  		return elf_machine_fixup_plt(l, result, reloc, rel_addr, l->l_jump_addr + JUMP_SIZE * reloc_arg);
 	}
   //else
   	return elf_machine_fixup_plt (l, result, reloc, rel_addr, value);

@@ -14,7 +14,7 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
-
+#define VMX_VMFUNC ".byte 0x0f,0x01,0xd4"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -242,7 +242,19 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
     GLRO(dl_debug_printf) ("\ninitialize program: %s\n\n", argv[0]);
 #endif
   if (init)
+	{
+		 GLRO(dl_debug_printf) ("main addr: %lx\n", (uint64_t) main);
+//lbx add codes
+/*asm volatile(VMX_VMFUNC
+		:
+		:"a"(0),"c"(1)
+		:"memory");*/
     (*init) (argc, argv, __environ MAIN_AUXVEC_PARAM);
+	/*asm volatile(VMX_VMFUNC
+		:
+		:"a"(0),"c"(0)
+		:"memory");*/
+	}
 
 #ifdef SHARED
   /* Auditing checkpoint: we have a new object.  */
@@ -286,7 +298,19 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
       THREAD_SETMEM (self, cleanup_jmp_buf, &unwind_buf);
 
       /* Run the program.  */
+      /* lbx add codes*/
+	GLRO(dl_debug_printf)("vmfunc1\n");
+
+    /* asm volatile(VMX_VMFUNC
+		:
+		:"a"(0),"c"(1)
+		:"memory");*/
       result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
+    /*  asm volatile(VMX_VMFUNC
+		:
+		:"a"(0),"c"(0)
+		:"memory");*/
+	GLRO(dl_debug_printf)("vmfunc2\n");
     }
   else
     {

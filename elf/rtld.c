@@ -739,6 +739,9 @@ dl_main (const ElfW(Phdr) *phdr,
 	 ElfW(Addr) *user_entry,
 	 ElfW(auxv_t) *auxv)
 {
+#define MEMDEV_IOC_MAGIC  'k'
+#define MEMDEV_IOCSETDATA _IOW(MEMDEV_IOC_MAGIC, 3, int)
+ 
   const ElfW(Phdr) *ph;
   enum mode mode;
   struct link_map *main_map;
@@ -948,7 +951,7 @@ of this helper program; chances are you did not intend to run this program.\n\
       strcat(main_jumpgot, ".jumpgot");
       _dl_printf("main_jumogot name:%s\n",main_jumpgot);
       int fd_mainjs = __open(main_jumpgot, O_RDONLY | O_CLOEXEC);
-      if(fd_mainjs == 0) 
+      if(fd_mainjs <= 0) 
       {
         main_map->l_protected_flag = 0;
         _dl_printf(" main proc have no jumpgot file\n");
@@ -961,13 +964,15 @@ of this helper program; chances are you did not intend to run this program.\n\
         __libc_read(fd_mainjs, &main_map->l_jshdr, sizeof(struct js_header));
         _dl_printf("main jump_offset:%x\n", (unsigned)main_map->l_jshdr.jump_off);
         _dl_printf("main sogt_offset:%x\n", (unsigned)main_map->l_jshdr.sgot_off);
+        _dl_printf("main back_offset:%x\n", (unsigned)main_map->l_jshdr.back_off);
         //initialize the shared object list(disabled)
         
         //mmap:offset size should be mutiple of memory page
-        uint32_t sgot_len = GLRO(dl_pagesize) * (main_map->l_jshdr.sgot_size/GLRO(dl_pagesize) + 1);
+        uint32_t sgot_len = GLRO(dl_pagesize) * ((main_map->l_jshdr.sgot_size + main_map->l_jshdr.back_size)/GLRO(dl_pagesize) + 1);
         uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + sizeof(struct js_header));
         main_map->l_jump_addr = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_mainjs, 0) +  main_map->l_jshdr.jump_off;
         main_map->l_sgot_addr = main_map->l_jump_addr + main_map->l_jshdr.sgot_off - main_map->l_jshdr.jump_off;
+	_dl_printf("%x\n", (unsigned)main_map->l_jump_addr);
         _dl_printf("%x\n", (unsigned)main_map->l_sgot_addr);
         __close(fd_mainjs);
         main_map->l_shared_flag = 0;
@@ -2217,23 +2222,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
 
 //lbx add code
 //send pid info
-#define MEMDEV_IOC_MAGIC  'k'
-#define MEMDEV_IOCSETDATA _IOW(MEMDEV_IOC_MAGIC, 3, int)
-  int pid = __getpid();
-  int cmd = MEMDEV_IOCSETDATA;
-  int fddev = open("/dev/memdev0", O_RDWR);
-  if(fddev < 0)
-  {
-    _dl_printf("Open Dev Mem0 Error!\n");
-  }
-  else
-  {
-    _dl_printf("<--- Call MEMDEV_IOCPRINT --->\n");
-    if (ioctl(fddev, cmd, &pid) < 0)
-    {
-      _dl_printf("Call cmd MEMDEV_IOCPRINT fail\n");
-    }
-  }
+
   //give map info
   // struct link_map *t = main_map;
   // void *page = mmap(NULL, 1024, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -2253,6 +2242,22 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
   //   t = t->l_next;
   // }
   // munmap(page, 1024);
+
+  int pid = __getpid();
+  int cmd = MEMDEV_IOCSETDATA;
+  int fddev = open("/dev/memdev0", O_RDWR);
+  if(fddev < 0)
+  {
+    _dl_printf("Open Dev Mem0 Error!\n");
+  }
+  else
+  {
+    if (ioctl(fddev, cmd, &pid) < 0)
+    {
+      _dl_printf("Call cmd MEMDEV_IOCPRINT fail\n");
+    }
+  }
+
 #if defined USE_LDCONFIG && !defined MAP_COPY
   /* We must munmap() the cache file.  */
   _dl_unload_cache ();
