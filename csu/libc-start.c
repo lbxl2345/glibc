@@ -243,7 +243,7 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 #endif
   if (init)
 	{
-		 GLRO(dl_debug_printf) ("main addr: %lx\n", (uint64_t) main);
+		 //GLRO(dl_debug_printf) ("main addr: %lx\n", (uint64_t) main);
 //lbx add codes
 /*asm volatile(VMX_VMFUNC
 		:
@@ -299,18 +299,18 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 
       /* Run the program.  */
       /* lbx add codes*/
-	GLRO(dl_debug_printf)("vmfunc1\n");
+	//GLRO(dl_debug_printf)("vmfunc  : ept 1\n");
 
-    /* asm volatile(VMX_VMFUNC
+     asm volatile(VMX_VMFUNC
 		:
 		:"a"(0),"c"(1)
-		:"memory");*/
+		:"memory");
       result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
-    /*  asm volatile(VMX_VMFUNC
+     asm volatile(VMX_VMFUNC
 		:
 		:"a"(0),"c"(0)
-		:"memory");*/
-	GLRO(dl_debug_printf)("vmfunc2\n");
+		:"memory");
+	//GLRO(dl_debug_printf)("vmfunc2: ept 2\n");
     }
   else
     {

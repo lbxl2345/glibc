@@ -29,7 +29,7 @@
 #include <dl-irel.h>
 
  //lbx add codes here
-#define JUMP_SIZE 42
+#define JUMP_SIZE 80
 #define SGOT_SIZE 8
 #define BACK_SIZE 50
 
@@ -152,7 +152,7 @@ _dl_fixup (
     return value;
 	if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	{
-  		_dl_dprintf(1, "using trampoline in dl_fixup:%s\n", l->l_name );
+  		_dl_dprintf(1, "using trampoline %u in dl_fixup:%s\n",  reloc_arg  , l->l_name);
   		//ElfW(Addr) *reloc_addr = rel_addr;
   		//ElfW(Addr) temp = ElfW(Addr) 
   	 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;

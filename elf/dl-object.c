@@ -244,7 +244,7 @@ _dl_new_object (char *realname, const char *libname, int type,
     if(fd_objectjs <= 0)
     {
       new->l_protected_flag = 0;
-      _dl_printf("this object has no jump got");
+      _dl_printf("this object has no jump got\n");
     }
     else
     {
