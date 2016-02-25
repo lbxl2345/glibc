@@ -75,10 +75,12 @@ struct r_search_path_struct
 
 struct js_header
 {
+  uint32_t jump_resolve_size;
   uint32_t jump_size;
   uint32_t sgot_size;
   uint32_t zero_size;
   uint32_t back_size;
+  uint32_t jump_resolve_off;
   uint32_t jump_off;
   uint32_t sgot_off;
   uint32_t back_off;
@@ -340,6 +342,7 @@ struct link_map
     int l_shared_flag;
     int l_protected_flag;
     struct js_header l_jshdr;
+    ElfW(Addr) l_resolve_addr;
     ElfW(Addr) l_add_addr;
     ElfW(Addr) l_jump_addr;
     ElfW(Addr) l_sgot_addr;

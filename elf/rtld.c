@@ -962,6 +962,7 @@ of this helper program; chances are you did not intend to run this program.\n\
       {
         main_map->l_protected_flag = 1;
         __libc_read(fd_mainjs, &main_map->l_jshdr, sizeof(struct js_header));
+        _dl_printf("main jump_resolve:%x\n", (unsigned)main_map->l_jshdr.jump_resolve_off);
         _dl_printf("main jump_offset:%x\n", (unsigned)main_map->l_jshdr.jump_off);
         _dl_printf("main sogt_offset:%x\n", (unsigned)main_map->l_jshdr.sgot_off);
         _dl_printf("main back_offset:%x\n", (unsigned)main_map->l_jshdr.back_off);
@@ -969,9 +970,10 @@ of this helper program; chances are you did not intend to run this program.\n\
         
         //mmap:offset size should be mutiple of memory page
         uint32_t sgot_len = GLRO(dl_pagesize) * ((main_map->l_jshdr.sgot_size + main_map->l_jshdr.back_size)/GLRO(dl_pagesize) + 1);
-        uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + sizeof(struct js_header));
-        main_map->l_jump_addr = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_mainjs, 0) +  main_map->l_jshdr.jump_off;
-        main_map->l_sgot_addr = main_map->l_jump_addr + main_map->l_jshdr.sgot_off - main_map->l_jshdr.jump_off;
+        uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + main_map->l_jshdr.jump_resolve_size +  sizeof(struct js_header));
+        main_map->l_resolve_addr = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_mainjs, 0) +  main_map->l_jshdr.jump_resolve_off;
+         main_map->l_jump_addr = main_map->l_resolve_addr - main_map->l_jshdr.jump_resolve_off + main_map->l_jshdr.jump_off;
+        main_map->l_sgot_addr = main_map->l_resolve_addr + main_map->l_jshdr.sgot_off - main_map->l_jshdr.jump_resolve_off;
         _dl_printf("%x\n", (unsigned)main_map->l_jump_addr);
         _dl_printf("%x\n", (unsigned)main_map->l_sgot_addr);
          GL(chg_ept_page) =  (ElfW(Addr))mmap(NULL, 1024, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);

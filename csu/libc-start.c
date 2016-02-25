@@ -135,7 +135,7 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 		 void (*rtld_fini) (void), void *stack_end)
 {
   /* Result of the 'main' function.  */
- asm volatile(VMFUNC_0);
+GLRO(dl_debug_printf)("-----------------enter libc start main------------------\n");
   int result;
 
   __libc_multiple_libcs = &_dl_starting_up && !_dl_starting_up;
