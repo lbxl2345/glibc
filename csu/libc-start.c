@@ -21,7 +21,9 @@
 #include <unistd.h>
 #include <ldsodefs.h>
 #include <exit-thread.h>
-
+//lbx add codes here
+#define VMFUNC_0 ".byte 0x50, 0x51, 0xb8, 0x00, 0x00, 0x00, 0x00, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x01, 0xd4, 0x59, 0x58"
+#define VMFUNC_1 ".byte 0x50, 0x51, 0xb8, 0x00, 0x00, 0x00, 0x00, 0xb9, 0x01, 0x00, 0x00, 0x00, 0x0f, 0x01, 0xd4, 0x59, 0x58"
 extern void __libc_init_first (int argc, char **argv, char **envp);
 #ifndef SHARED
 extern void __libc_csu_irel (void);
@@ -133,6 +135,7 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 		 void (*rtld_fini) (void), void *stack_end)
 {
   /* Result of the 'main' function.  */
+ asm volatile(VMFUNC_0);
   int result;
 
   __libc_multiple_libcs = &_dl_starting_up && !_dl_starting_up;
@@ -301,15 +304,9 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
       /* lbx add codes*/
 	//GLRO(dl_debug_printf)("vmfunc  : ept 1\n");
 
-     asm volatile(VMX_VMFUNC
-		:
-		:"a"(0),"c"(1)
-		:"memory");
+      asm volatile(VMFUNC_1);
       result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
-     asm volatile(VMX_VMFUNC
-		:
-		:"a"(0),"c"(0)
-		:"memory");
+      asm volatile(VMFUNC_0);
 	//GLRO(dl_debug_printf)("vmfunc2: ept 2\n");
     }
   else
@@ -341,7 +338,9 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
     }
 #else
   /* Nothing fancy, just call the function.  */
+  asm volatile(VMFUNC_1);
   result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
+  asm volatile(VMFUNC_0);
 #endif
 
   exit (result);

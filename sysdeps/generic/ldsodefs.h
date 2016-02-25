@@ -417,7 +417,9 @@ struct rtld_global
     void *list[50];
   } *_dl_scope_free_list;
   /*lbx add some value*/
+  uint8_t _chg_ept_flag;
   uint8_t _shared_num;
+  ElfW(Addr) _chg_ept_page;
   #define NO_SHARED_LIST
   #include <sharedlist.h>
   char _shared_list[SHARED_LIST_SIZE][30];

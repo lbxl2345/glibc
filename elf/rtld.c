@@ -972,8 +972,9 @@ of this helper program; chances are you did not intend to run this program.\n\
         uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + sizeof(struct js_header));
         main_map->l_jump_addr = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_mainjs, 0) +  main_map->l_jshdr.jump_off;
         main_map->l_sgot_addr = main_map->l_jump_addr + main_map->l_jshdr.sgot_off - main_map->l_jshdr.jump_off;
-	_dl_printf("%x\n", (unsigned)main_map->l_jump_addr);
+        _dl_printf("%x\n", (unsigned)main_map->l_jump_addr);
         _dl_printf("%x\n", (unsigned)main_map->l_sgot_addr);
+         GL(chg_ept_page) =  (ElfW(Addr))mmap(NULL, 1024, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
         __close(fd_mainjs);
         main_map->l_shared_flag = 0;
       }

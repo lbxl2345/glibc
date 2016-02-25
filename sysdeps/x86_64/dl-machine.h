@@ -72,6 +72,22 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
   extern void _dl_runtime_profile_sse (ElfW(Word)) attribute_hidden;
   extern void _dl_runtime_profile_avx (ElfW(Word)) attribute_hidden;
   extern void _dl_runtime_profile_avx512 (ElfW(Word)) attribute_hidden;
+  if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+  {
+  GL(chg_ept_flag) = 1;
+ //_dl_dprintf(1, "addr of jump[0] :%lx\n", unsigned long( l->l_jump_addr ));
+  _dl_dprintf(1, "addr of sgot[0] :%lx\n", (unsigned long)( l->l_sgot_addr ));
+   //char *p = (char*) GL(chg_ept_page);
+  // ElfW(Addr) resolve_addr;
+  ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr );
+ if (HAS_ARCH_FEATURE (AVX512F_Usable))
+   	*temp=  (ElfW(Addr) ) &_dl_runtime_resolve_avx512;
+  else if (HAS_ARCH_FEATURE (AVX_Usable)) 
+   	*temp =  (ElfW(Addr)) &_dl_runtime_resolve_avx;
+  else
+   	 *temp =  (ElfW(Addr)) &_dl_runtime_resolve_sse;
+    _dl_dprintf(1, "sgot[0] :%lx\n", *(ElfW(Addr)*)(l->l_sgot_addr ));
+    }
 
   if (l->l_info[DT_JMPREL] && lazy)
     {
@@ -101,7 +117,7 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	{
 	  if (HAS_ARCH_FEATURE (AVX512F_Usable))
 	    *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_profile_avx512;
-	  else if (HAS_ARCH_FEATURE (AVX_Usable))
+	  else if (HAS_ARCH_FEATURE (AVX_Usable)) 
 	    *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_profile_avx;
 	  else
 	    *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_profile_sse;
@@ -118,11 +134,43 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	     indicated by the offset on the stack, and then jump to
 	     the resolved address.  */
 	  if (HAS_ARCH_FEATURE (AVX512F_Usable))
-	    *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx512;
+	  {
+	//_dl_dprintf(1, "AVX512F_Usable---------------------------------------->\n");
+	   //*(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx512;
+	    // if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+	    // {
+	    // *(ElfW(Addr) *) (got + 2) =  l->l_jump_addr;
+	    // _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
+	    // }
+	    // else
+		*(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx512;
+	  // }
+	}
 	  else if (HAS_ARCH_FEATURE (AVX_Usable))
-	    *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx;
+	  {
+	 _dl_dprintf(1, "AVX_Usable---------------------------------------->\n");
+	   if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+	   {
+	   *(ElfW(Addr) *) (got + 2) =  l->l_jump_addr;
+	   //*(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx;
+	   _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
+	   }
+	   else
+	   {
+	   	*(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx;
+	   }
+	 }
 	  else
-	    *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_sse;
+	  {
+	 // _dl_dprintf(1, "else---------------------------------------->\n");
+	 if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+	//   {
+		//*(ElfW(Addr) *) (got + 2) = l->l_jump_addr;
+	//     _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
+	// }
+	// else
+	   *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_sse;
+	 }
 	}
     }
 
