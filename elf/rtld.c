@@ -979,6 +979,7 @@ of this helper program; chances are you did not intend to run this program.\n\
          GL(chg_ept_page) =  (ElfW(Addr))mmap(NULL, 1024, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
         __close(fd_mainjs);
         main_map->l_shared_flag = 0;
+        _dl_printf("****************%lx**************************\n", main_map->l_entry);
       }
       if (__builtin_expect (mode, normal) == normal
 	  && GL(dl_rtld_map).l_info[DT_SONAME] != NULL

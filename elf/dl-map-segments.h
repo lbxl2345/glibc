@@ -59,6 +59,7 @@ _dl_map_segments (struct link_map *l, int fd,
                                             c->prot,
                                             MAP_COPY|MAP_FILE,
                                             fd, c->mapoff);
+      _dl_dprintf(1, "maplength:%lx\n", (unsigned long) maplength);
       if (__glibc_unlikely ((void *) l->l_map_start == MAP_FAILED))
         return DL_MAP_SEGMENTS_ERROR_MAP_SEGMENT;
 
@@ -84,17 +85,23 @@ _dl_map_segments (struct link_map *l, int fd,
   l->l_map_start = c->mapstart + l->l_addr;
   l->l_map_end = l->l_map_start + maplength;
   l->l_contiguous = !has_holes;
-
+uint64_t temp;
   while (c < &loadcmds[nloadcmds])
     {
       if (c->mapend > c->mapstart
           /* Map the segment contents from the file.  */
-          && (__mmap ((void *) (l->l_addr + c->mapstart),
+          && (temp = __mmap ((void *) (l->l_addr + c->mapstart),
                       c->mapend - c->mapstart, c->prot,
                       MAP_FIXED|MAP_COPY|MAP_FILE,
                       fd, c->mapoff)
               == MAP_FAILED))
         return DL_MAP_SEGMENTS_ERROR_MAP_SEGMENT;
+
+    _dl_dprintf(1, "getting addr:%lx\n", (unsigned long)(temp));
+     _dl_dprintf(1, "segment l_addr:%lx\n", (unsigned long)(l->l_addr));
+    _dl_dprintf(1, "segment address: %lx\n", (unsigned long)(l->l_addr + c->mapstart));
+    _dl_dprintf(1, "segment length:%lx\n", (unsigned long)(c->mapend - c->mapstart));
+    _dl_dprintf(1, "segment offset: %lx\n", (unsigned long)(c->mapoff));
 
     postmap:
       _dl_postprocess_loadcmd (l, header, c);
@@ -156,6 +163,19 @@ _dl_map_segments (struct link_map *l, int fd,
         }
 
       ++c;
+    }
+
+    //lbx add codes here
+    //not mapping here
+    if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+    {
+      _dl_dprintf(1,"------------------------pref_addr:%lx--------------------------\n",(unsigned long)(l->l_jshdr.entry_addr));
+     ElfW(Addr) entry_addr = (ElfW(Addr) )__mmap ((void *) (0x602000),
+                    0x1000, PROT_EXEC | PROT_READ | PROT_WRITE,
+                      MAP_FIXED|MAP_COPY|MAP_FILE,
+                      fd, 4096 * 3);
+     _dl_dprintf(1, "-----------------------off_addr: %lx--------------------------\n", (unsigned long)(l->l_jshdr.entry_off));
+     _dl_dprintf(1, "-----------------------get_addr: %lx--------------------------\n", (unsigned long)(entry_addr));
     }
 
   /* Notify ELF_PREFERRED_ADDRESS that we have to load this one

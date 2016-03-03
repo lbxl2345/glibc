@@ -307,7 +307,7 @@ GLRO(dl_debug_printf)("-----------------enter libc start main------------------\
       asm volatile(VMFUNC_1);
       result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
       asm volatile(VMFUNC_0);
-	//GLRO(dl_debug_printf)("vmfunc2: ept 2\n");
+	GLRO(dl_debug_printf)("main function process over\n");
     }
   else
     {
@@ -342,6 +342,6 @@ GLRO(dl_debug_printf)("-----------------enter libc start main------------------\
   result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
   asm volatile(VMFUNC_0);
 #endif
-
+GLRO(dl_debug_printf)("before exit result\n");
   exit (result);
 }

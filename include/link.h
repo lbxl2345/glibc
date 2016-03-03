@@ -84,6 +84,8 @@ struct js_header
   uint32_t jump_off;
   uint32_t sgot_off;
   uint32_t back_off;
+  uint64_t entry_off;
+  uint64_t entry_addr;
 };
 
 struct seg_info
