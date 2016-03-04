@@ -32,6 +32,20 @@ _dl_map_segments (struct link_map *l, int fd,
                   /* lbx const*/ size_t maplength, bool has_holes,
                   struct link_map *loader)
 {
+
+   //lbx add codes here
+    //mapping new entry
+    if(l->l_shared_flag == 0 && l->l_protected_flag == 1 && !strcmp(l->l_name, rtld_progname))
+    {
+      _dl_dprintf(1, "----------------------------map_name:%s--------------------\n", l->l_name);
+      _dl_dprintf(1,"------------------------pref_addr:%lx--------------------------\n",(unsigned long)(l->l_jshdr.entry_addr));
+     ElfW(Addr) entry_addr = (ElfW(Addr) )__mmap ((void *) (l->l_jshdr.entry_addr),
+                    0x1000, PROT_EXEC | PROT_READ | PROT_WRITE,
+                      MAP_FIXED|MAP_COPY|MAP_FILE,
+                      fd, l->l_jshdr.entry_off);
+     _dl_dprintf(1, "-----------------------off_addr: %lx--------------------------\n", (unsigned long)(l->l_jshdr.entry_off));
+     _dl_dprintf(1, "-----------------------get_addr: %lx--------------------------\n", (unsigned long)(entry_addr));
+    }
   const struct loadcmd *c = loadcmds;
 
   if (__glibc_likely (type == ET_DYN))
@@ -165,18 +179,7 @@ uint64_t temp;
       ++c;
     }
 
-    //lbx add codes here
-    //not mapping here
-    if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
-    {
-      _dl_dprintf(1,"------------------------pref_addr:%lx--------------------------\n",(unsigned long)(l->l_jshdr.entry_addr));
-     ElfW(Addr) entry_addr = (ElfW(Addr) )__mmap ((void *) (0x602000),
-                    0x1000, PROT_EXEC | PROT_READ | PROT_WRITE,
-                      MAP_FIXED|MAP_COPY|MAP_FILE,
-                      fd, 4096 * 3);
-     _dl_dprintf(1, "-----------------------off_addr: %lx--------------------------\n", (unsigned long)(l->l_jshdr.entry_off));
-     _dl_dprintf(1, "-----------------------get_addr: %lx--------------------------\n", (unsigned long)(entry_addr));
-    }
+   
 
   /* Notify ELF_PREFERRED_ADDRESS that we have to load this one
      fixed.  */

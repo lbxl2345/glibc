@@ -2241,6 +2241,16 @@ _dl_map_object (struct link_map *loader, const char *name,
       else
 	_dl_signal_error (errno, name, NULL,
 			  N_("cannot open shared object file"));
+  if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+    {
+      _dl_dprintf(1,"------------------------pref_addr:%lx--------------------------\n",(unsigned long)(l->l_jshdr.entry_addr));
+     ElfW(Addr) entry_addr = (ElfW(Addr) )__mmap ((void *) (0x602000),
+                    0x1000, PROT_EXEC | PROT_READ | PROT_WRITE,
+                      MAP_FIXED|MAP_COPY|MAP_FILE,
+                      fd, 4096 * 3);
+     _dl_dprintf(1, "-----------------------off_addr: %lx--------------------------\n", (unsigned long)(l->l_jshdr.entry_off));
+     _dl_dprintf(1, "-----------------------get_addr: %lx--------------------------\n", (unsigned long)(entry_addr));
+    }
     }
 
   void *stack_end = __libc_stack_end;
