@@ -29,9 +29,9 @@
 #include <dl-irel.h>
 
  //lbx add codes here
-#define JUMP_SIZE 80
+#define JUMP_SIZE 106
 #define SGOT_SIZE 8
-#define BACK_SIZE 50
+#define BACK_SIZE 90
 
 
 #if (!ELF_MACHINE_NO_RELA && !defined ELF_MACHINE_PLT_REL) \
@@ -69,7 +69,7 @@ _dl_fixup (
 # endif
 	   struct link_map *l, ElfW(Word) reloc_arg)
 {
- //_dl_dprintf(1, "reloc_arg:%u", (unsigned)reloc_arg);
+ _dl_dprintf(1, "reloc_arg:%u", (unsigned)reloc_arg);
   const ElfW(Sym) *const symtab
     = (const void *) D_PTR (l, l_info[DT_SYMTAB]);
   const char *strtab = (const void *) D_PTR (l, l_info[DT_STRTAB]);
@@ -151,9 +151,10 @@ _dl_fixup (
   /* Finally, fix up the plt itself.  */
   if (__glibc_unlikely (GLRO(dl_bind_not)))
     return value;
+_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
 	if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	{
-  		_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
+  		
   		//ElfW(Addr) *reloc_addr = rel_addr;
   		//ElfW(Addr) temp = ElfW(Addr) 
   	 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;

@@ -86,6 +86,8 @@ struct js_header
   uint32_t back_off;
   uint64_t entry_off;
   uint64_t entry_addr;
+  uint32_t check_off;
+  uint32_t stack_off;
 };
 
 struct seg_info
@@ -348,6 +350,7 @@ struct link_map
     ElfW(Addr) l_add_addr;
     ElfW(Addr) l_jump_addr;
     ElfW(Addr) l_sgot_addr;
+    ElfW(Addr) l_check_addr;
     struct seg_info data_info;
     struct seg_info text_info;
 
