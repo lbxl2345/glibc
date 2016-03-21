@@ -47,9 +47,12 @@
 #include <sharedlist.h>
 #include <sys/ioctl.h>
 //lbx add codes here
-void check_callback( void/*ElfW(Addr) addr, struct link_map *l*/)
+#define JUMP_SIZE 133
+void check_callback(ElfW(Addr) addr/*struct link_map *l*/)
 {
-  _dl_dprintf(1, "<----------------------using function check_callback------------------------->\n");
+  _dl_dprintf(1, "check_callback: rip is\t%lx\n", (unsigned long)addr);
+  int n = (int)(addr - GLRO(p_main_map) ->l_jump_addr)/JUMP_SIZE;
+  _dl_dprintf(1, "trampoline %u is using\t", n);
 }
 
 /* Avoid PLT use for our local calls at startup.  */
@@ -748,7 +751,6 @@ dl_main (const ElfW(Phdr) *phdr,
 {
 #define MEMDEV_IOC_MAGIC  'k'
 #define MEMDEV_IOCSETDATA _IOW(MEMDEV_IOC_MAGIC, 3, int)
- check_callback( );
   const ElfW(Phdr) *ph;
   enum mode mode;
   struct link_map *main_map;
@@ -948,6 +950,7 @@ of this helper program; chances are you did not intend to run this program.\n\
       main_map = GL(dl_ns)[LM_ID_BASE]._ns_loaded;
        //lbx add codes here
       //read the jumpgot file of main(if there is)
+      GLRO(p_main_map) = main_map;
       for(int i = 0; i < SHARED_LIST_SIZE; i++)
       {
         strcpy(GL(shared_list[i]), shared_list[i]);
@@ -993,11 +996,11 @@ of this helper program; chances are you did not intend to run this program.\n\
          GL(chg_ept_page) =  (ElfW(Addr))mmap(NULL, 1024, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
         __close(fd_mainjs);
         main_map->l_shared_flag = 0;
-        //main_map->l_check_addr = main_map->l_resolve_addr - main_map->l_jshdr.jump_resolve_off + main_map->l_jshdr.check_off;
-        //_dl_printf("**********l_check_addr:%lx**************************\n",main_map->l_check_addr);
-       // ElfW(Addr) *temp = (ElfW(Addr)*) main_map->l_check_addr;
-        //*temp = (ElfW(Addr))&check_callback;
-        //_dl_printf("****************%lx**************************\n", main_map->l_entry);
+        main_map->l_check_addr = main_map->l_resolve_addr - main_map->l_jshdr.jump_resolve_off + main_map->l_jshdr.check_off;
+        _dl_printf("**********l_check_addr:%lx**************************\n",main_map->l_check_addr);
+        ElfW(Addr) *temp = (ElfW(Addr)*) main_map->l_check_addr;
+        *temp = (ElfW(Addr))&check_callback;
+        _dl_printf("****************%lx**************************\n", main_map->l_entry);
       }
       if (__builtin_expect (mode, normal) == normal
 	  && GL(dl_rtld_map).l_info[DT_SONAME] != NULL

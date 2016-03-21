@@ -601,7 +601,8 @@ struct rtld_global_ro
   struct audit_ifaces *_dl_audit;
   unsigned int _dl_naudit;
   //lbx add codes 
-    void (*check_callback) (void /*ElfW(Addr) addr, struct link_map *l*/);
+    void (*check_callback) (ElfW(Addr) addr/*, struct link_map *l*/);
+   struct link_map* _p_main_map;
 };
 # define __rtld_global_attribute__
 # if IS_IN (rtld)

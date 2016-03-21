@@ -29,9 +29,8 @@
 #include <dl-irel.h>
 
  //lbx add codes here
-#define JUMP_SIZE 106
+#define JUMP_SIZE 133
 #define SGOT_SIZE 8
-#define BACK_SIZE 90
 
 
 #if (!ELF_MACHINE_NO_RELA && !defined ELF_MACHINE_PLT_REL) \
@@ -151,10 +150,10 @@ _dl_fixup (
   /* Finally, fix up the plt itself.  */
   if (__glibc_unlikely (GLRO(dl_bind_not)))
     return value;
-_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
+
 	if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	{
-  		
+  		_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
   		//ElfW(Addr) *reloc_addr = rel_addr;
   		//ElfW(Addr) temp = ElfW(Addr) 
   	 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
