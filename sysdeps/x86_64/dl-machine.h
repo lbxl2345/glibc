@@ -75,8 +75,8 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
   if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
   {
   GL(chg_ept_flag) = 1;
-  _dl_dprintf(1, "addr of jump[0] :%lx\n", (unsigned long)( l->l_resolve_addr ));
-  _dl_dprintf(1, "addr of sgot[0] :%lx\n", (unsigned long)( l->l_sgot_addr ));
+  // _dl_dprintf(1, "addr of jump[0] :%lx\n", (unsigned long)( l->l_resolve_addr ));
+  // _dl_dprintf(1, "addr of sgot[0] :%lx\n", (unsigned long)( l->l_sgot_addr ));
    //char *p = (char*) GL(chg_ept_page);
   // ElfW(Addr) resolve_addr;
   ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr );
@@ -86,7 +86,7 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
    	*temp =  (ElfW(Addr)) &_dl_runtime_resolve_avx;
   else
    	 *temp =  (ElfW(Addr)) &_dl_runtime_resolve_sse;
-    _dl_dprintf(1, "sgot[0] :%lx\n", *(ElfW(Addr)*)(l->l_sgot_addr ));
+    //_dl_dprintf(1, "sgot[0] :%lx\n", *(ElfW(Addr)*)(l->l_sgot_addr ));
     }
 
   if (l->l_info[DT_JMPREL] && lazy)
@@ -135,12 +135,12 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	     the resolved address.  */
 	  if (HAS_ARCH_FEATURE (AVX512F_Usable))
 	  {
-	_dl_dprintf(1, "AVX512F_Usable---------------------------------------->\n");
+	//_dl_dprintf(1, "AVX512F_Usable---------------------------------------->\n");
 	   //*(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx512;
 	    if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	    {
 	    *(ElfW(Addr) *) (got + 2) =  l->l_resolve_addr;
-	    _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
+	   // _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
 	    }
 	    else
 	  *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx512;
@@ -148,12 +148,12 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	}
 	  else if (HAS_ARCH_FEATURE (AVX_Usable))
 	  {
-	 _dl_dprintf(1, "AVX_Usable---------------------------------------->\n");
+	// _dl_dprintf(1, "AVX_Usable---------------------------------------->\n");
 	   if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	   {
 	   *(ElfW(Addr) *) (got + 2) = l->l_resolve_addr;
 	   //*(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_avx;
-	   _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
+	  // _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
 	   }
 	   else
 	   // {
@@ -162,11 +162,11 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	 }
 	  else
 	  {
-	 _dl_dprintf(1, "else---------------------------------------->\n");
+	// _dl_dprintf(1, "else---------------------------------------->\n");
 	 if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	  {
 		*(ElfW(Addr) *) (got + 2) = l->l_resolve_addr;
-	    _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
+	  //  _dl_dprintf(1, "got + 2: %lx\n", (unsigned long)(*(got + 2)));
 	}
 	else
 	   *(ElfW(Addr) *) (got + 2) = (ElfW(Addr)) &_dl_runtime_resolve_sse;

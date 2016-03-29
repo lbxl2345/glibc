@@ -46,13 +46,80 @@
 
 #include <sharedlist.h>
 #include <sys/ioctl.h>
+#include <zlib.h>
 //lbx add codes here
-#define JUMP_SIZE 133
+#define JUMP_SIZE 135
+void check_addr(ElfW(Addr) addr)
+{
+  _dl_dprintf(1, "checking func is now working\n");
+  _dl_dprintf(1, "checking addr %lx\n", (unsigned long)addr);
+  if(addr == 0 || addr ==1);
+  else if(addr >= GLRO(p_main_map->l_jump_addr) && addr <= GLRO(p_main_map->l_sgot_addr));
+  else if(addr < GLRO(p_main_map->l_text_end));
+  else 
+    _dl_debug_printf("error occur\n");
+}
 void check_callback(ElfW(Addr) addr/*struct link_map *l*/)
 {
-  _dl_dprintf(1, "check_callback: rip is\t%lx\n", (unsigned long)addr);
   int n = (int)(addr - GLRO(p_main_map) ->l_jump_addr)/JUMP_SIZE;
-  _dl_dprintf(1, "trampoline %u is using\t", n);
+  if(n == 16) //sigaction
+  {
+    struct sigaction *act;
+    struct sigaction *oldact;
+   __asm__ __volatile__("movq 0x18(%%rsp), %0\n\t":"=r"(act));
+    _dl_dprintf(1, "act is 0x%lx\n", (unsigned long)act);
+    if( act != NULL)
+    {
+      check_addr((ElfW(Addr))(act->sa_handler));
+      check_addr((ElfW(Addr))(act->sa_sigaction));
+      check_addr((ElfW(Addr))(act->sa_restorer));
+    }
+    __asm__ __volatile__("movq 0x20(%%rsp), %0\n\t":"=r"(oldact));
+    _dl_dprintf(1, "oldact is 0x%lx\n", (unsigned long)oldact);
+    if(oldact != NULL)
+    {
+      check_addr((ElfW(Addr))(oldact->sa_handler));
+      check_addr((ElfW(Addr))(oldact->sa_sigaction));
+      check_addr((ElfW(Addr))(oldact->sa_restorer));
+    }
+  }
+  if(n == 15) //qsort
+  {
+    uint64_t compare = 0;
+      __asm__ __volatile__("movq 0x28(%%rsp), %0\n\t":"=r"((unsigned long)compare));
+    _dl_dprintf(1, "compare is 0x%lx\n", (unsigned long)compare); 
+    check_addr(compare);
+  }
+  if(n == 52) //deflateInit2_
+  {
+    z_streamp strm;
+    __asm__ __volatile__("movq 0x10(%%rsp), %0\n\t":"=r"(strm));
+   if(strm != NULL)
+   {
+   check_addr((ElfW(Addr))(strm->zalloc));
+   check_addr((ElfW(Addr))(strm->zfree));
+  }
+  }
+  if(n == 40) //deflate
+  {
+    z_streamp strm;
+    __asm__ __volatile__("movq 0x10(%%rsp), %0\n\t":"=r"(strm));
+    if(strm != NULL)
+   {
+   check_addr((ElfW(Addr))(strm->zalloc));
+   check_addr((ElfW(Addr))(strm->zfree));
+  }
+  }
+  if(n == 92) //deflateEnd
+  {  
+    z_streamp strm;
+    __asm__ __volatile__("movq 0x10(%%rsp), %0\n\t":"=r"(strm));
+    if(strm != NULL)
+   {
+   check_addr((ElfW(Addr))(strm->zalloc));
+   check_addr((ElfW(Addr))(strm->zfree));
+  }
+  }
 }
 
 /* Avoid PLT use for our local calls at startup.  */
