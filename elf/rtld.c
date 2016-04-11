@@ -48,7 +48,7 @@
 #include <sys/ioctl.h>
 #include <zlib.h>
 //lbx add codes here
-#define JUMP_SIZE 135
+#define JUMP_SIZE  184
 void check_addr(ElfW(Addr) addr)
 {
   _dl_dprintf(1, "checking func is now working\n");
@@ -818,6 +818,20 @@ dl_main (const ElfW(Phdr) *phdr,
 {
 #define MEMDEV_IOC_MAGIC  'k'
 #define MEMDEV_IOCSETDATA _IOW(MEMDEV_IOC_MAGIC, 3, int)
+   int pid = __getpid();
+  int cmd = MEMDEV_IOCSETDATA;
+  int fddev = open("/dev/memdev0", O_RDWR);
+  if(fddev < 0)
+  {
+    _dl_printf("Open Dev Mem0 Error!\n");
+  }
+  else
+  {
+    if (ioctl(fddev, cmd, &pid) < 0)
+    {
+      _dl_printf("Call cmd MEMDEV_IOCPRINT fail\n");
+    }
+  }
   const ElfW(Phdr) *ph;
   enum mode mode;
   struct link_map *main_map;
@@ -1046,10 +1060,10 @@ of this helper program; chances are you did not intend to run this program.\n\
         //initialize the shared object list(disabled)
         
         //mmap:offset size should be mutiple of memory page
-        uint32_t sgot_len = GLRO(dl_pagesize) * ((main_map->l_jshdr.sgot_size + main_map->l_jshdr.back_size)/GLRO(dl_pagesize) + 2);
+        uint32_t sgot_len = GLRO(dl_pagesize) * ((main_map->l_jshdr.sgot_size)/GLRO(dl_pagesize) + 2);
         _dl_printf("sgot_len is:%lx\n", (unsigned long)sgot_len);
         ElfW(Addr) addr_temp;
-        uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + main_map->l_jshdr.jump_resolve_size +  sizeof(struct js_header));
+        uint32_t jump_len = (main_map->l_jshdr.zero_size + main_map->l_jshdr.jump_size + main_map->l_jshdr.jump_resolve_size +  sizeof(struct js_header) + main_map->l_jshdr.back_size + main_map->l_jshdr.back8_size);
         addr_temp = (ElfW(Addr)) __mmap (NULL , sgot_len + jump_len, PROT_EXEC|PROT_READ|PROT_WRITE, MAP_PRIVATE, fd_mainjs, 0);
         ElfW(Addr)* p_temp = (ElfW(Addr)*) addr_temp;
          ElfW(Addr) addr_temp1 =  (ElfW(Addr))__mmap ((void *)p_temp , jump_len, PROT_EXEC|PROT_READ, MAP_PRIVATE|MAP_FIXED, fd_mainjs, 0);
@@ -1067,7 +1081,10 @@ of this helper program; chances are you did not intend to run this program.\n\
         _dl_printf("**********l_check_addr:%lx**************************\n",main_map->l_check_addr);
         ElfW(Addr) *temp = (ElfW(Addr)*) main_map->l_check_addr;
         *temp = (ElfW(Addr))&check_callback;
-        _dl_printf("****************%lx**************************\n", main_map->l_entry);
+        ElfW(Addr) shared_stack = (ElfW(Addr))mmap(NULL, 4096 * 256, PROT_READ|PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0)  + 4096 * 256;
+        _dl_printf("****************%lx**************************\n", shared_stack);
+        ElfW(Addr) *stack_temp =  (ElfW(Addr)*) (main_map->l_resolve_addr - main_map->l_jshdr.jump_resolve_off + main_map->l_jshdr.stack_got);
+        *stack_temp = shared_stack;
       }
       if (__builtin_expect (mode, normal) == normal
 	  && GL(dl_rtld_map).l_info[DT_SONAME] != NULL
@@ -1112,6 +1129,8 @@ of this helper program; chances are you did not intend to run this program.\n\
     {
       /* Create a link_map for the executable itself.
 	 This will be what dlopen on "" returns.  */
+      //lbx
+ 
       main_map = _dl_new_object ((char *) "", "", lt_executable, NULL,
 				 __RTLD_OPENEXEC, LM_ID_BASE);
       assert (main_map != NULL);
@@ -2335,20 +2354,20 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
   // }
   // munmap(page, 1024);
 
-  int pid = __getpid();
-  int cmd = MEMDEV_IOCSETDATA;
-  int fddev = open("/dev/memdev0", O_RDWR);
-  if(fddev < 0)
-  {
-    _dl_printf("Open Dev Mem0 Error!\n");
-  }
-  else
-  {
-    if (ioctl(fddev, cmd, &pid) < 0)
-    {
-      _dl_printf("Call cmd MEMDEV_IOCPRINT fail\n");
-    }
-  }
+  // int pid = __getpid();
+  // int cmd = MEMDEV_IOCSETDATA;
+  // int fddev = open("/dev/memdev0", O_RDWR);
+  // if(fddev < 0)
+  // {
+  //   _dl_printf("Open Dev Mem0 Error!\n");
+  // }
+  // else
+  // {
+  //   if (ioctl(fddev, cmd, &pid) < 0)
+  //   {
+  //     _dl_printf("Call cmd MEMDEV_IOCPRINT fail\n");
+  //   }
+  // }
 
 #if defined USE_LDCONFIG && !defined MAP_COPY
   /* We must munmap() the cache file.  */

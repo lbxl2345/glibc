@@ -135,7 +135,12 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 		 void (*rtld_fini) (void), void *stack_end)
 {
   /* Result of the 'main' function.  */
-GLRO(dl_debug_printf)("-----------------enter libc start main------------------\n");
+   GLRO(dl_debug_printf)("-----------------enter libc start main------------------\n");
+   #ifdef LIBC_START_MAIN_AUXVEC_ARG
+  #endif
+         
+
+
   int result;
 
   __libc_multiple_libcs = &_dl_starting_up && !_dl_starting_up;
@@ -303,7 +308,7 @@ GLRO(dl_debug_printf)("-----------------enter libc start main------------------\
       /* Run the program.  */
       /* lbx add codes*/
 	//GLRO(dl_debug_printf)("vmfunc  : ept 1\n");
-
+     GLRO(dl_debug_printf)("-----------------before main------------------\n");
      asm volatile(VMFUNC_1);
       result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
       asm volatile(VMFUNC_0);

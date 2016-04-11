@@ -79,15 +79,19 @@ struct js_header
   uint32_t jump_size;
   uint32_t sgot_size;
   uint32_t zero_size;
+  uint32_t back8_size;
   uint32_t back_size;
   uint32_t jump_resolve_off;
   uint32_t jump_off;
   uint32_t sgot_off;
+  uint32_t back8_off;
   uint32_t back_off;
   uint64_t entry_off;
   uint64_t entry_addr;
+  uint32_t flag_off;
   uint32_t check_off;
   uint32_t stack_off;
+  uint32_t stack_got;
 };
 
 struct seg_info

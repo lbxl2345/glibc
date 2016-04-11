@@ -29,7 +29,7 @@
 #include <dl-irel.h>
 
  //lbx add codes here
-#define JUMP_SIZE 135
+#define JUMP_SIZE 184
 #define SGOT_SIZE 8
 
 
@@ -152,21 +152,21 @@ _dl_fixup (
 
 	if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
 	{
-  		// _dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
+  		_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
   		// //ElfW(Addr) *reloc_addr = rel_addr;
   		// //ElfW(Addr) temp = ElfW(Addr) 
   	 // 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
   	 // 	//*rel_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
-  	 // 	_dl_dprintf(1, "jump_addr:%lx\n", (unsigned long)l->l_jump_addr + JUMP_SIZE * (reloc_arg ));
+  	 	_dl_dprintf(1, "jump_addr:%lx\n", (unsigned long)l->l_jump_addr + JUMP_SIZE * (reloc_arg ));
   		// //ElfW(Addr) *temp_addr = l->l_sgot_addr + 2 * reloc_offset;
-  	 // 	_dl_dprintf(1, "sgot_addr:%lx\n", (unsigned long)l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
+  	              _dl_dprintf(1, "sgot_addr:%lx\n", (unsigned long)l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
   		ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
   		*temp = value;
   		//_dl_dprintf(1, "return:%x\n",(unsigned)(*reloc_addr));
   		//elf_machine_fixup_sgot(l, result, reloc, &(l->l_sgot_addr + SGOT_SIZE * reloc_arg), value);
   		return elf_machine_fixup_plt(l, result, reloc, rel_addr, l->l_jump_addr + JUMP_SIZE * reloc_arg );
 	}
-  //else
+  //elses
   	return elf_machine_fixup_plt (l, result, reloc, rel_addr, value);
 }
 
