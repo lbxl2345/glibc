@@ -162,7 +162,7 @@ _dl_fixup (
   	              _dl_dprintf(1, "sgot_addr:%lx\n", (unsigned long)l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
   		ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
   		*temp = value;
-  		//_dl_dprintf(1, "return:%x\n",(unsigned)(*reloc_addr));
+  		_dl_dprintf(1, "function address:%lx\n",(unsigned long)(value));
   		//elf_machine_fixup_sgot(l, result, reloc, &(l->l_sgot_addr + SGOT_SIZE * reloc_arg), value);
   		return elf_machine_fixup_plt(l, result, reloc, rel_addr, l->l_jump_addr + JUMP_SIZE * reloc_arg );
 	}
