@@ -69,7 +69,6 @@ _dl_fixup (
 # endif
 	   struct link_map *l, ElfW(Word) reloc_arg)
 {
- _dl_dprintf(1, "reloc_arg:%u", (unsigned)reloc_arg);
   const ElfW(Sym) *const symtab
     = (const void *) D_PTR (l, l_info[DT_SYMTAB]);
   const char *strtab = (const void *) D_PTR (l, l_info[DT_STRTAB]);
@@ -151,20 +150,21 @@ _dl_fixup (
   /* Finally, fix up the plt itself.  */
   if (__glibc_unlikely (GLRO(dl_bind_not)))
     return value;
-_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
-	if(l->l_shared_flag == 0 && l->l_protected_flag == 1)
+
+//judge from the name
+	if(l->l_shared_flag == 0 && l->l_protected_flag == 1 && strcmp(result->l_name, "full path name you want") == 0 )
 	{
-  		
+  		_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
   		//ElfW(Addr) *reloc_addr = rel_addr;
   		//ElfW(Addr) temp = ElfW(Addr) 
   	 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
   	 	//*rel_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
-  	 	_dl_dprintf(1, "jump_addr:%lx\n", (unsigned long)l->l_jump_addr + JUMP_SIZE * (reloc_arg ));
+  	 	//_dl_dprintf(1, "jump_addr:%lx\n", (unsigned long)l->l_jump_addr + JUMP_SIZE * (reloc_arg ));
   		//ElfW(Addr) *temp_addr = l->l_sgot_addr + 2 * reloc_offset;
-  	 	_dl_dprintf(1, "sgot_addr:%lx\n", (unsigned long)l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
+  	 	//_dl_dprintf(1, "sgot_addr:%lx\n", (unsigned long)l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
   		ElfW(Addr) *temp = (ElfW(Addr)*)(l->l_sgot_addr + SGOT_SIZE * (reloc_arg + 1));
   		*temp = value;
-  		_dl_dprintf(1, "value:%lx\n", value);
+  		//_dl_dprintf(1, "value:%lx\n", value);
   		//_dl_dprintf(1, "return:%x\n",(unsigned)(*reloc_addr));
   		//elf_machine_fixup_sgot(l, result, reloc, &(l->l_sgot_addr + SGOT_SIZE * reloc_arg), value);
   		return elf_machine_fixup_plt(l, result, reloc, rel_addr, l->l_jump_addr + JUMP_SIZE * reloc_arg );

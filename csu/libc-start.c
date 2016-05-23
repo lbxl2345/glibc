@@ -246,17 +246,7 @@ GLRO(dl_debug_printf)("-----------------enter libc start main------------------\
 #endif
   if (init)
 	{
-		 //GLRO(dl_debug_printf) ("main addr: %lx\n", (uint64_t) main);
-//lbx add codes
-/*asm volatile(VMX_VMFUNC
-		:
-		:"a"(0),"c"(1)
-		:"memory");*/
     (*init) (argc, argv, __environ MAIN_AUXVEC_PARAM);
-	/*asm volatile(VMX_VMFUNC
-		:
-		:"a"(0),"c"(0)
-		:"memory");*/
 	}
 
 #ifdef SHARED
@@ -301,13 +291,7 @@ GLRO(dl_debug_printf)("-----------------enter libc start main------------------\
       THREAD_SETMEM (self, cleanup_jmp_buf, &unwind_buf);
 
       /* Run the program.  */
-      /* lbx add codes*/
-	//GLRO(dl_debug_printf)("vmfunc  : ept 1\n");
-
-     asm volatile(VMFUNC_1);
       result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
-      asm volatile(VMFUNC_0);
-	GLRO(dl_debug_printf)("main function process over\n");
     }
   else
     {
@@ -338,10 +322,7 @@ GLRO(dl_debug_printf)("-----------------enter libc start main------------------\
     }
 #else
   /* Nothing fancy, just call the function.  */
-  asm volatile(VMFUNC_1);
   result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);
-  asm volatile(VMFUNC_0);
 #endif
-GLRO(dl_debug_printf)("before exit result\n");
   exit (result);
 }
