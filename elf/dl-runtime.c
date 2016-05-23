@@ -152,9 +152,9 @@ _dl_fixup (
     return value;
 
 //judge from the name
-	if(l->l_shared_flag == 0 && l->l_protected_flag == 1 && strcmp(result->l_name, "full path name you want") == 0 )
+	if(l->l_shared_flag == 0 && l->l_protected_flag == 1 && strcmp(result->l_name, "/home/cc/glibc-build/libc.so.6") == 0 )
 	{
-  		_dl_dprintf(1, "using trampoline %u\t in dl_fixup:%s\n",  reloc_arg , l->l_name);
+  		_dl_dprintf(1, "handing functions in: %s,\t  using trampoline %u\t in dl_fixup:%s\n",  result->l_name, reloc_arg , l->l_name);
   		//ElfW(Addr) *reloc_addr = rel_addr;
   		//ElfW(Addr) temp = ElfW(Addr) 
   	 	//*reloc_addr = l->l_jump_addr + JUMP_SIZE * reloc_arg;
